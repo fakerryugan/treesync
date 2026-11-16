@@ -36,7 +36,8 @@ $routes = [
     ['POST', '/login',                        'auth_do_login'],
     ['POST', '/logout',                       'auth_do_logout'],
 
-    ['GET',  '/',                             'org_index'],
+    ['GET',  '/',                             'home_redirect'],
+    ['GET',  '/struktur',                     'org_index'],
     ['GET',  '/pengumuman',                   'feed_index'],
     ['POST', '/pengumuman/create',            'feed_create'],
     ['POST', '/pengumuman/{id}/update',       'feed_update'],
@@ -56,7 +57,13 @@ $routes = [
 
     ['GET',  '/tugas',                        'tasks_index'],
     ['POST', '/tugas/create',                 'tasks_create'],
+    ['POST', '/tugas/{id}/update',            'tasks_update'],
+    ['POST', '/tugas/{id}/delete',            'tasks_delete'],
     ['POST', '/api/tasks/{id}/status',        'tasks_api_status'],
+    ['POST', '/api/tasks/{id}/accept',        'tasks_api_accept'],
+    ['POST', '/api/tasks/{id}/reject',        'tasks_api_reject'],
+    ['GET',  '/api/tasks/{id}/comments',      'tasks_api_comments'],
+    ['POST', '/api/tasks/{id}/comments',      'tasks_api_comment_add'],
 
     ['GET',  '/admin/pengguna',               'admin_users_index'],
     ['POST', '/admin/pengguna/store',         'admin_users_store'],

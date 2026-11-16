@@ -45,3 +45,8 @@ function scalar(string $sql, array $params = []): mixed
     $v = q($sql, $params)->fetchColumn();
     return $v === false ? null : $v;
 }
+
+function last_insert_id(): int
+{
+    return (int)db()->lastInsertId();
+}

@@ -25,9 +25,17 @@ function layout_footer(): void
 
 // ---------------- Auth ----------------
 
+function home_redirect(): void
+{
+    if (current_user() !== null) {
+        redirect('/pengumuman');
+    }
+    redirect('/login');
+}
+
 function auth_show_login(): void
 {
-    if (current_user() !== null) redirect('/');
+    if (current_user() !== null) redirect('/pengumuman');
     view('login', ['title' => 'Masuk — TreeSync', 'hideLayout' => true]);
 }
 
@@ -39,7 +47,7 @@ function auth_do_login(): void
         flash_set('error', 'Kredensial salah atau akun tidak aktif.');
         redirect('/login');
     }
-    redirect('/');
+    redirect('/pengumuman');
 }
 
 function auth_do_logout(): void
@@ -129,38 +137,38 @@ function org_division_member_add(int $divisionId): void
     $user = current_user();
     if (!can_manage_division($divisionId, $user)) {
         flash_set('error', 'Anda tidak memiliki hak akses untuk menambah anggota pada divisi ini.');
-        redirect('/?open_division=' . $divisionId);
+        redirect('/struktur?open_division=' . $divisionId);
     }
 
     $div = one('SELECT * FROM divisions WHERE id=?', [$divisionId]);
     if ($div === null) {
         flash_set('error', 'Divisi tidak ditemukan.');
-        redirect('/');
+        redirect('/struktur');
     }
 
     $userId = (int)($_POST['user_id'] ?? 0);
     $target = one('SELECT * FROM users WHERE id=?', [$userId]);
     if ($target === null) {
         flash_set('error', 'Pengguna tidak ditemukan.');
-        redirect('/?open_division=' . $divisionId);
+        redirect('/struktur?open_division=' . $divisionId);
     }
 
     $adminRoleId = (int)scalar('SELECT id FROM roles WHERE slug="administrator"');
     if ((int)$target['role_id'] === $adminRoleId) {
         flash_set('error', 'Administrator tidak dapat dimasukkan ke divisi.');
-        redirect('/?open_division=' . $divisionId);
+        redirect('/struktur?open_division=' . $divisionId);
     }
 
     if ((int)$target['division_id'] === $divisionId) {
         flash_set('error', $target['nama'] . ' sudah menjadi anggota ' . $div['nama'] . '.');
-        redirect('/?open_division=' . $divisionId);
+        redirect('/struktur?open_division=' . $divisionId);
     }
 
     // Pindahkan ke divisi ini; jika dia ketua divisi sebelumnya, lepas status ketuanya
     q('UPDATE users SET division_id=?, is_ketua=0 WHERE id=?', [$divisionId, $userId]);
     audit_log('ORG_MEMBER_ADD', "Anggota #$userId dimasukkan ke divisi #$divisionId oleh #" . $user['id']);
     flash_set('success', $target['nama'] . ' berhasil ditambahkan ke ' . $div['nama'] . '.');
-    redirect('/?open_division=' . $divisionId);
+    redirect('/struktur?open_division=' . $divisionId);
 }
 
 /**
@@ -172,26 +180,26 @@ function org_division_member_remove(int $divisionId, int $userId): void
     $user = current_user();
     if (!can_manage_division($divisionId, $user)) {
         flash_set('error', 'Anda tidak memiliki hak akses untuk mengeluarkan anggota dari divisi ini.');
-        redirect('/?open_division=' . $divisionId);
+        redirect('/struktur?open_division=' . $divisionId);
     }
 
     $div = one('SELECT * FROM divisions WHERE id=?', [$divisionId]);
     if ($div === null) {
         flash_set('error', 'Divisi tidak ditemukan.');
-        redirect('/');
+        redirect('/struktur');
     }
 
     $target = one('SELECT * FROM users WHERE id=?', [$userId]);
     if ($target === null || (int)$target['division_id'] !== $divisionId) {
         flash_set('error', 'Anggota tidak ditemukan pada divisi ini.');
-        redirect('/?open_division=' . $divisionId);
+        redirect('/struktur?open_division=' . $divisionId);
     }
 
     // Set division_id = NULL dan is_ketua = 0
     q('UPDATE users SET division_id=NULL, is_ketua=0 WHERE id=?', [$userId]);
     audit_log('ORG_MEMBER_REMOVE', "Anggota #$userId dikeluarkan dari divisi #$divisionId oleh #" . $user['id']);
     flash_set('success', $target['nama'] . ' berhasil dikeluarkan dari ' . $div['nama'] . '.');
-    redirect('/?open_division=' . $divisionId);
+    redirect('/struktur?open_division=' . $divisionId);
 }
 
 /**
@@ -203,26 +211,26 @@ function org_division_ketua_set(int $divisionId): void
     $user = current_user();
     if (!can_manage_division($divisionId, $user)) {
         flash_set('error', 'Anda tidak memiliki hak akses untuk mengatur ketua divisi ini.');
-        redirect('/?open_division=' . $divisionId);
+        redirect('/struktur?open_division=' . $divisionId);
     }
 
     $div = one('SELECT * FROM divisions WHERE id=?', [$divisionId]);
     if ($div === null) {
         flash_set('error', 'Divisi tidak ditemukan.');
-        redirect('/');
+        redirect('/struktur');
     }
 
     $userId = (int)($_POST['user_id'] ?? 0);
     $target = one('SELECT * FROM users WHERE id=?', [$userId]);
     if ($target === null) {
         flash_set('error', 'Pengguna tidak ditemukan.');
-        redirect('/?open_division=' . $divisionId);
+        redirect('/struktur?open_division=' . $divisionId);
     }
 
     $adminRoleId = (int)scalar('SELECT id FROM roles WHERE slug="administrator"');
     if ((int)$target['role_id'] === $adminRoleId) {
         flash_set('error', 'Administrator tidak dapat menjadi ketua divisi.');
-        redirect('/?open_division=' . $divisionId);
+        redirect('/struktur?open_division=' . $divisionId);
     }
 
     // Lepaskan status ketua lama pada divisi ini
@@ -231,7 +239,7 @@ function org_division_ketua_set(int $divisionId): void
     q('UPDATE users SET division_id=?, is_ketua=1 WHERE id=?', [$divisionId, $userId]);
     audit_log('ORG_KETUA_SET', "Ketua divisi #$divisionId ditetapkan ke #$userId oleh #" . $user['id']);
     flash_set('success', $target['nama'] . ' berhasil ditetapkan sebagai Ketua ' . $div['nama'] . '.');
-    redirect('/?open_division=' . $divisionId);
+    redirect('/struktur?open_division=' . $divisionId);
 }
 
 /**
@@ -243,25 +251,25 @@ function org_division_ketua_unset(int $divisionId, int $userId): void
     $user = current_user();
     if (!can_manage_division($divisionId, $user)) {
         flash_set('error', 'Anda tidak memiliki hak akses untuk mencopot ketua divisi ini.');
-        redirect('/?open_division=' . $divisionId);
+        redirect('/struktur?open_division=' . $divisionId);
     }
 
     $div = one('SELECT * FROM divisions WHERE id=?', [$divisionId]);
     if ($div === null) {
         flash_set('error', 'Divisi tidak ditemukan.');
-        redirect('/');
+        redirect('/struktur');
     }
 
     $target = one('SELECT * FROM users WHERE id=?', [$userId]);
     if ($target === null || (int)$target['division_id'] !== $divisionId) {
         flash_set('error', 'Pengguna tidak ditemukan pada divisi ini.');
-        redirect('/?open_division=' . $divisionId);
+        redirect('/struktur?open_division=' . $divisionId);
     }
 
     q('UPDATE users SET is_ketua=0 WHERE id=? AND division_id=?', [$userId, $divisionId]);
     audit_log('ORG_KETUA_UNSET', "Status ketua #$userId di divisi #$divisionId dicopot oleh #" . $user['id']);
     flash_set('success', 'Status ketua ' . $target['nama'] . ' berhasil dicopot (kini menjadi anggota biasa).');
-    redirect('/?open_division=' . $divisionId);
+    redirect('/struktur?open_division=' . $divisionId);
 }
 
 /**
@@ -280,26 +288,26 @@ function org_anggota_atasan(int $id): void
         || ((int)$user['is_ketua'] === 1 && $id !== (int)$user['id'] && is_descendant((int)$user['id'], $id));
     if (!$mayManage) {
         flash_set('error', 'Anda hanya bisa mengatur bawahan di bawah jalur komando Anda.');
-        redirect('/');
+        redirect('/struktur');
     }
     if ((int)$target['role_id'] === (int)scalar('SELECT id FROM roles WHERE slug="administrator"')) {
         flash_set('error', 'Pengguna Administrator berada di luar pohon organisasi.');
-        redirect('/');
+        redirect('/struktur');
     }
 
     $parentId = (int)($_POST['parent_id'] ?? 0);
     if ($parentId === $id) {
         flash_set('error', 'Pengguna tidak bisa menjadi atasan dirinya sendiri.');
-        redirect('/');
+        redirect('/struktur');
     }
     $parent = $parentId > 0 ? one('SELECT id, role_id FROM users WHERE id=?', [$parentId]) : null;
     if ($parentId > 0 && $parent === null) {
         flash_set('error', 'Atasan tidak ditemukan.');
-        redirect('/');
+        redirect('/struktur');
     }
     if ($parent !== null && (int)$parent['role_id'] === (int)scalar('SELECT id FROM roles WHERE slug="administrator"')) {
         flash_set('error', 'Atasan tidak valid: Administrator di luar pohon organisasi.');
-        redirect('/');
+        redirect('/struktur');
     }
     if (!$canManageGlobal) {
         // Ketua: atasan baru wajib dirinya sendiri atau keturunannya
@@ -307,7 +315,7 @@ function org_anggota_atasan(int $id): void
         foreach (descendant_users((int)$user['id']) as $d) $allowed[] = (int)$d['id'];
         if (!in_array($parentId, $allowed, true)) {
             flash_set('error', 'Atasan baru harus berada di bawah jalur komando Anda.');
-            redirect('/');
+        redirect('/struktur');
         }
     }
     assert_no_parent_cycle($id, $parentId);
@@ -315,5 +323,5 @@ function org_anggota_atasan(int $id): void
     q('UPDATE users SET parent_id=? WHERE id=?', [$parentId ?: null, $id]);
     audit_log('ORG_ANGGOTA', "Atasan #$id -> " . ($parentId ?: 'ROOT') . " oleh #" . $user['id']);
     flash_set('success', 'Posisi ' . $target['nama'] . ' pada jalur komando diperbarui.');
-    redirect('/');
+        redirect('/struktur');
 }

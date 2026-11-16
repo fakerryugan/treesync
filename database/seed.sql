@@ -23,6 +23,8 @@ TRUNCATE TABLE announcement_likes;
 TRUNCATE TABLE announcement_reads;
 TRUNCATE TABLE announcements;
 TRUNCATE TABLE whiteboard_notes;
+TRUNCATE TABLE task_comments;
+TRUNCATE TABLE task_assignees;
 TRUNCATE TABLE tasks;
 TRUNCATE TABLE users;
 TRUNCATE TABLE role_permissions;
@@ -128,6 +130,9 @@ INSERT INTO tasks (assigner_id, assignee_id, judul, deskripsi, status) VALUES
  (4, 9,  'Audit Jaringan',       'Pemetaan perangkat jaringan gedung A.', 'DONE'),
  (5, 10, 'Rekonsiliasi Bulanan', 'Rekonsiliasi mutasi kas bulan Oktober.', 'IN_PROGRESS'),
  (2, 3,  'Draft Anggaran 2027',  'Susun draf anggaran divisi untuk tahun depan.', 'TODO');
+
+INSERT INTO task_assignees (task_id, user_id)
+SELECT id, assignee_id FROM tasks WHERE assignee_id IS NOT NULL;
 
 -- ---------------- Audit dummy ----------------
 INSERT INTO audit_logs (user_id, aksi, detail) VALUES

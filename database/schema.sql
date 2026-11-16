@@ -147,19 +147,50 @@ CREATE TABLE IF NOT EXISTS whiteboard_notes (
 -- Tugas Kanban: TODO / IN_PROGRESS / DONE
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS tasks (
-  id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  assigner_id   INT UNSIGNED NOT NULL,
-  assignee_id   INT UNSIGNED NOT NULL,
-  judul         VARCHAR(150) NOT NULL,
-  deskripsi     TEXT,
-  status        VARCHAR(20) NOT NULL DEFAULT 'TODO',
-  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  id                 INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  assigner_id        INT UNSIGNED NOT NULL,
+  assignee_id        INT UNSIGNED NULL,
+  target_division_id INT UNSIGNED NULL,
+  judul              VARCHAR(150) NOT NULL,
+  deskripsi          TEXT,
+  status             VARCHAR(20) NOT NULL DEFAULT 'TODO',
+  created_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (assigner_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (assignee_id) REFERENCES users(id) ON DELETE CASCADE,
-  CONSTRAINT chk_tasks_status CHECK (status IN ('TODO','IN_PROGRESS','DONE')),
+  FOREIGN KEY (assignee_id) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (target_division_id) REFERENCES divisions(id) ON DELETE SET NULL,
+  CONSTRAINT chk_tasks_status CHECK (status IN ('REQUESTED','TODO','IN_PROGRESS','DONE','REJECTED')),
   INDEX idx_tasks_assignee (assignee_id),
-  INDEX idx_tasks_assigner (assigner_id)
+  INDEX idx_tasks_assigner (assigner_id),
+  INDEX idx_tasks_target_division (target_division_id)
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
+-- Penerima Tugas Multi-Anggota (Many-to-Many)
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS task_assignees (
+  task_id    INT UNSIGNED NOT NULL,
+  user_id    INT UNSIGNED NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (task_id, user_id),
+  FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_task_assignees_user (user_id)
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
+-- Diskusi & Catatan Penolakan/Penerimaan Tugas
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS task_comments (
+  id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  task_id    INT UNSIGNED NOT NULL,
+  author_id  INT UNSIGNED NOT NULL,
+  isi        TEXT NOT NULL,
+  tipe       VARCHAR(20) NOT NULL DEFAULT 'COMMENT', -- 'COMMENT', 'REJECT', 'ACCEPT'
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (task_id)   REFERENCES tasks(id) ON DELETE CASCADE,
+  FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_task_comments_task (task_id)
 ) ENGINE=InnoDB;
 
 -- ------------------------------------------------------------

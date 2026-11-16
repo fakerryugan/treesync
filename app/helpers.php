@@ -38,7 +38,11 @@ function flash_get(): ?array
 function csrf_token(): string
 {
     if (empty($_SESSION['csrf'])) {
-        $_SESSION['csrf'] = bin2hex(random_bytes(32));
+        $secret = env('APP_SECRET', 'treesync_default_secret_key');
+        $time   = (string)time();
+        $rand   = bin2hex(random_bytes(16));
+        $sig    = hash_hmac('sha256', "$time:$rand", $secret);
+        $_SESSION['csrf'] = "$time:$rand:$sig";
     }
     return $_SESSION['csrf'];
 }
@@ -50,11 +54,32 @@ function csrf_field(): string
 
 function verify_csrf(): void
 {
-    $sent = $_POST['_csrf'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
-    if (!hash_equals(csrf_token(), (string)$sent)) {
+    $sent = (string)($_POST['_csrf'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? ''));
+    if ($sent === '') {
         http_response_code(419);
         exit('Sesi tidak valid (CSRF). Silakan muat ulang halaman.');
     }
+
+    // 1. Validasi via sesi aktif
+    if (!empty($_SESSION['csrf']) && hash_equals($_SESSION['csrf'], $sent)) {
+        return;
+    }
+
+    // 2. Validasi via HMAC signature (tahan pergantian container serverless Vercel)
+    $parts = explode(':', $sent);
+    if (count($parts) === 3) {
+        [$time, $rand, $sig] = $parts;
+        $secret = env('APP_SECRET', 'treesync_default_secret_key');
+        $expectedSig = hash_hmac('sha256', "$time:$rand", $secret);
+        // Berlaku 3 jam (10800 detik)
+        if (hash_equals($expectedSig, $sig) && (time() - (int)$time) < 10800 && (time() - (int)$time) >= 0) {
+            $_SESSION['csrf'] = $sent;
+            return;
+        }
+    }
+
+    http_response_code(419);
+    exit('Sesi tidak valid (CSRF). Silakan muat ulang halaman.');
 }
 
 // ---------- Validasi & util ----------

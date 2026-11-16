@@ -10,6 +10,21 @@ function current_user(): ?array
     if (!$loaded) {
         $loaded = true;
         $uid = $_SESSION['user_id'] ?? null;
+
+        // Fallback: baca signed auth cookie jika sesi /tmp hilang karena pergantian container serverless Vercel
+        if ($uid === null && !empty($_COOKIE['treesync_auth'])) {
+            $decoded = base64_decode((string)$_COOKIE['treesync_auth'], true);
+            if ($decoded && substr_count($decoded, ':') === 2) {
+                [$cUid, $issuedAt, $sig] = explode(':', $decoded, 3);
+                $secret = env('APP_SECRET', 'treesync_default_secret_key');
+                $expectedSig = hash_hmac('sha256', "$cUid:$issuedAt", $secret);
+                if (hash_equals($expectedSig, $sig) && (time() - (int)$issuedAt) < (86400 * 14) && (time() - (int)$issuedAt) >= 0) {
+                    $uid = (int)$cUid;
+                    $_SESSION['user_id'] = $uid;
+                }
+            }
+        }
+
         if ($uid !== null) {
             $user = one(
                 'SELECT u.*, r.nama AS role_nama, r.slug AS role_slug, d.nama AS divisi_nama
@@ -19,7 +34,10 @@ function current_user(): ?array
                  WHERE u.id = ? AND u.is_active = 1',
                 [$uid]
             );
-            if ($user === null) unset($_SESSION['user_id']); // akun dinonaktifkan
+            if ($user === null) {
+                unset($_SESSION['user_id']); // akun dinonaktifkan
+                logout();
+            }
         }
     }
     return $user;
@@ -46,6 +64,21 @@ function attempt_login(string $username, string $password): bool
     session_regenerate_id(true); // cegah session fixation
     $_SESSION['user_id'] = (int)$user['id'];
     unset($_SESSION['perm_cache']);
+
+    // Terbitkan signed auth cookie agar login tahan saat berpindah serverless Lambda instance
+    $secret = env('APP_SECRET', 'treesync_default_secret_key');
+    $time = (string)time();
+    $uidStr = (string)$user['id'];
+    $sig = hash_hmac('sha256', "$uidStr:$time", $secret);
+    $cookieVal = base64_encode("$uidStr:$time:$sig");
+    setcookie('treesync_auth', $cookieVal, [
+        'expires'  => time() + (86400 * 14),
+        'path'     => '/',
+        'httponly' => true,
+        'samesite' => 'Lax',
+        'secure'   => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || env('APP_ENV', 'dev') === 'production',
+    ]);
+
     audit_log('LOGIN', 'Login pengguna ' . $user['username']);
     return true;
 }
@@ -57,6 +90,13 @@ function logout(): void
     if (ini_get('session.use_cookies')) {
         setcookie(session_name(), '', time() - 42000, '/');
     }
+    setcookie('treesync_auth', '', [
+        'expires'  => time() - 42000,
+        'path'     => '/',
+        'httponly' => true,
+        'samesite' => 'Lax',
+        'secure'   => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || env('APP_ENV', 'dev') === 'production',
+    ]);
     session_destroy();
 }
 

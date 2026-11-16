@@ -20,12 +20,18 @@ if (is_file($envFile)) {
 
 date_default_timezone_set(env('APP_TZ', 'Asia/Jakarta'));
 
-// Session aman
+// Session aman (serverless friendly)
 if (session_status() === PHP_SESSION_NONE) {
+    $tmpDir = is_writable('/tmp') ? '/tmp' : sys_get_temp_dir();
+    if (!empty($tmpDir)) {
+        session_save_path($tmpDir);
+    }
     session_set_cookie_params([
+        'lifetime' => 86400 * 14,
+        'path'     => '/',
         'httponly' => true,
         'samesite' => 'Lax',
-        'secure'   => (env('APP_ENV', 'dev') === 'production'),
+        'secure'   => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || env('APP_ENV', 'dev') === 'production',
     ]);
     session_name(env('APP_SESSION', 'treesync_sid'));
     session_start();

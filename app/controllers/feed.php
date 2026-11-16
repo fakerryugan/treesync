@@ -193,7 +193,7 @@ function feed_create(): void
     $newId = (int)db()->lastInsertId();
 
     // Pembuat otomatis tercatat sudah membaca pengumuman buatannya
-    q('INSERT IGNORE INTO announcement_reads (announcement_id, user_id) VALUES (?,?)', [$newId, $user['id']]);
+    q('INSERT OR IGNORE INTO announcement_reads (announcement_id, user_id) VALUES (?,?)', [$newId, $user['id']]);
 
     audit_log('ANN_CREATE', 'Pengumuman: ' . $judul);
     flash_set('success', 'Pengumuman berhasil dipublikasikan.');
@@ -308,7 +308,7 @@ function feed_mark_read(int $id): void
 {
     require_login();
     assert_announcement_visible($id);
-    q('INSERT IGNORE INTO announcement_reads (announcement_id, user_id) VALUES (?,?)', [$id, current_user()['id']]);
+    q('INSERT OR IGNORE INTO announcement_reads (announcement_id, user_id) VALUES (?,?)', [$id, current_user()['id']]);
     flash_set('success', 'Pengumuman ditandai sudah dibaca.');
     redirect('/pengumuman');
 }
@@ -333,7 +333,7 @@ function feed_comment(int $id): void
         [$id, $uid, $parentId ?: null, $isi]);
 
     // ATURAN: Jika menulis komentar, otomatis tercatat sudah membaca pengumuman jika sebelumnya lupa klik
-    q('INSERT IGNORE INTO announcement_reads (announcement_id, user_id) VALUES (?,?)', [$id, $uid]);
+    q('INSERT OR IGNORE INTO announcement_reads (announcement_id, user_id) VALUES (?,?)', [$id, $uid]);
 
     redirect('/pengumuman');
 }

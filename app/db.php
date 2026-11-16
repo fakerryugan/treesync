@@ -73,6 +73,18 @@ function db(): PDO
 
 function q(string $sql, array $params = []): PDOStatement
 {
+    // Kompatibilitas query lintas DBMS (SQLite vs MySQL)
+    $driver = db()->getAttribute(PDO::ATTR_DRIVER_NAME);
+    if ($driver === 'sqlite') {
+        if (stripos($sql, 'INSERT IGNORE INTO') !== false) {
+            $sql = preg_replace('/INSERT\s+IGNORE\s+INTO/i', 'INSERT OR IGNORE INTO', $sql);
+        }
+    } elseif ($driver === 'mysql') {
+        if (stripos($sql, 'INSERT OR IGNORE INTO') !== false) {
+            $sql = preg_replace('/INSERT\s+OR\s+IGNORE\s+INTO/i', 'INSERT IGNORE INTO', $sql);
+        }
+    }
+
     $stmt = db()->prepare($sql);
     $stmt->execute($params);
     return $stmt;

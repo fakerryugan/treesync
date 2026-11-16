@@ -1,4 +1,4 @@
--- TreeSync SQLite Schema
+-- TreeSync SQLite Schema (100% selaras dengan MySQL schema.sql)
 PRAGMA foreign_keys = OFF;
 
 DROP TABLE IF EXISTS audit_logs;
@@ -59,7 +59,6 @@ CREATE TABLE users (
   parent_id     INTEGER NULL,
   is_ketua      INTEGER NOT NULL DEFAULT 0,
   is_active     INTEGER NOT NULL DEFAULT 1,
-  avatar_url    TEXT NULL,
   created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (role_id)     REFERENCES roles(id),
@@ -75,9 +74,8 @@ CREATE TABLE announcements (
   isi                TEXT NOT NULL,
   lampiran           TEXT NULL,
   created_at         DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at         DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (author_id)          REFERENCES users(id)     ON DELETE CASCADE,
-  FOREIGN KEY (target_division_id) REFERENCES divisions(id) ON DELETE CASCADE
+  FOREIGN KEY (target_division_id) REFERENCES divisions(id) ON DELETE SET NULL
 );
 
 CREATE TABLE announcement_likes (
@@ -116,6 +114,7 @@ CREATE TABLE whiteboard_notes (
   author_id   INTEGER NOT NULL,
   isi         TEXT NOT NULL,
   warna       TEXT NOT NULL DEFAULT 'yellow',
+  lebar       INTEGER NOT NULL DEFAULT 192,
   pos_x       INTEGER NOT NULL DEFAULT 20,
   pos_y       INTEGER NOT NULL DEFAULT 20,
   created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -125,22 +124,24 @@ CREATE TABLE whiteboard_notes (
 );
 
 CREATE TABLE tasks (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
-  assigner_id INTEGER NOT NULL,
-  assignee_id INTEGER NULL,
-  judul       TEXT NOT NULL,
-  deskripsi   TEXT NOT NULL DEFAULT '',
-  status      TEXT NOT NULL DEFAULT 'TODO',
-  lampiran    TEXT NULL,
-  created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (assigner_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (assignee_id) REFERENCES users(id) ON DELETE SET NULL
+  id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+  assigner_id        INTEGER NOT NULL,
+  assignee_id        INTEGER NULL,
+  target_division_id INTEGER NULL,
+  judul              TEXT NOT NULL,
+  deskripsi          TEXT NULL,
+  status             TEXT NOT NULL DEFAULT 'TODO',
+  created_at         DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at         DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (assigner_id)        REFERENCES users(id)      ON DELETE CASCADE,
+  FOREIGN KEY (assignee_id)        REFERENCES users(id)      ON DELETE SET NULL,
+  FOREIGN KEY (target_division_id) REFERENCES divisions(id)  ON DELETE SET NULL
 );
 
 CREATE TABLE task_assignees (
-  task_id INTEGER NOT NULL,
-  user_id INTEGER NOT NULL,
+  task_id    INTEGER NOT NULL,
+  user_id    INTEGER NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (task_id, user_id),
   FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -151,6 +152,7 @@ CREATE TABLE task_comments (
   task_id    INTEGER NOT NULL,
   author_id  INTEGER NOT NULL,
   isi        TEXT NOT NULL,
+  tipe       TEXT NOT NULL DEFAULT 'COMMENT',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (task_id)   REFERENCES tasks(id) ON DELETE CASCADE,
   FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
@@ -160,8 +162,8 @@ CREATE TABLE audit_logs (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id    INTEGER NULL,
   aksi       TEXT NOT NULL,
-  detail     TEXT NULL,
-  ip_address TEXT NULL,
+  detail     TEXT NOT NULL DEFAULT '',
+  ip_address TEXT NOT NULL DEFAULT '',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );

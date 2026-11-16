@@ -239,7 +239,7 @@ function tasks_create(): void
     $taskId = last_insert_id();
 
     foreach ($assigneeIds as $aId) {
-        q('INSERT IGNORE INTO task_assignees (task_id, user_id) VALUES (?, ?)', [$taskId, $aId]);
+        q('INSERT OR IGNORE INTO task_assignees (task_id, user_id) VALUES (?, ?)', [$taskId, $aId]);
     }
 
     $count = count($assigneeIds);
@@ -302,7 +302,7 @@ function tasks_update(int $id): void
     if ($assigneeIds !== []) {
         q('DELETE FROM task_assignees WHERE task_id=?', [$id]);
         foreach ($assigneeIds as $aId) {
-            q('INSERT IGNORE INTO task_assignees (task_id, user_id) VALUES (?, ?)', [$id, $aId]);
+            q('INSERT OR IGNORE INTO task_assignees (task_id, user_id) VALUES (?, ?)', [$id, $aId]);
         }
     }
 
@@ -408,7 +408,7 @@ function tasks_api_accept(int $id): void
 
     q('DELETE FROM task_assignees WHERE task_id=?', [$id]);
     foreach ($assigneeIds as $aId) {
-        q('INSERT IGNORE INTO task_assignees (task_id, user_id) VALUES (?, ?)', [$id, $aId]);
+        q('INSERT OR IGNORE INTO task_assignees (task_id, user_id) VALUES (?, ?)', [$id, $aId]);
     }
 
     $catatan = trim($_POST['catatan'] ?? '');

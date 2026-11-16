@@ -53,17 +53,17 @@ INSERT INTO role_permissions (role_id, permission_id) VALUES
  (5,7),(5,8);
 
 INSERT INTO users (id, username, email, password_hash, nama, jabatan, role_id, division_id, parent_id, is_ketua, is_active) VALUES
- (1,  'admin', 'admin@treesync.local', '$2y$10$vK3sD4W0e33wK2aZk2k/O.eWp5KcqeTfxh6Z1fP3CZy1h8eS5L.y6', 'Admin Simulasi', 'System Administrator', 1, NULL, NULL, 0, 1),
- (2,  'budi',  'budi@treesync.local',  '$2y$10$fV2.R2zYpP7Q8uF4F7v5.OuG8V8P3zK7s3W9x1f8Zy1h8eS5L.y6a', 'Budi Simulasi',  'Direktur Utama',     2, 1,    NULL, 1, 1),
- (3,  'siti',  'siti@treesync.local',  '$2y$10$fV2.R2zYpP7Q8uF4F7v5.OuG8V8P3zK7s3W9x1f8Zy1h8eS5L.y6a', 'Siti Contoh',   'Kadiv Riset',        3, 2,    2,    1, 1),
- (4,  'andi',  'andi@treesync.local',  '$2y$10$fV2.R2zYpP7Q8uF4F7v5.OuG8V8P3zK7s3W9x1f8Zy1h8eS5L.y6a', 'Andi Fiktif',   'Kadiv Teknis',       3, 3,    2,    1, 1),
- (5,  'rina',  'rina@treesync.local',  '$2y$10$fV2.R2zYpP7Q8uF4F7v5.OuG8V8P3zK7s3W9x1f8Zy1h8eS5L.y6a', 'Rina Dugaan',   'Kadiv Keuangan',     3, 4,    2,    1, 1),
- (6,  'agus',  'agus@treesync.local',  '$2y$10$fV2.R2zYpP7Q8uF4F7v5.OuG8V8P3zK7s3W9x1f8Zy1h8eS5L.y6a', 'Agus Staf A',   'Peneliti Senior',    5, 2,    3,    0, 1),
- (7,  'dewi',  'dewi@treesync.local',  '$2y$10$fV2.R2zYpP7Q8uF4F7v5.OuG8V8P3zK7s3W9x1f8Zy1h8eS5L.y6a', 'Dewi Uji',      'Peneliti Junior',    5, 5,    3,    1, 1),
- (8,  'tono',  'tono@treesync.local',  '$2y$10$fV2.R2zYpP7Q8uF4F7v5.OuG8V8P3zK7s3W9x1f8Zy1h8eS5L.y6a', 'Tono Percobaan','DevOps Engineer',   5, 3,    4,    0, 1),
- (9,  'lina',  'lina@treesync.local',  '$2y$10$fV2.R2zYpP7Q8uF4F7v5.OuG8V8P3zK7s3W9x1f8Zy1h8eS5L.y6a', 'Lina Reviu',    'Backend Developer',  5, 3,    4,    0, 1),
- (10, 'joko',  'joko@treesync.local',  '$2y$10$fV2.R2zYpP7Q8uF4F7v5.OuG8V8P3zK7s3W9x1f8Zy1h8eS5L.y6a', 'Joko Tiruan',   'Akuntan',            5, 4,    5,    0, 1),
- (11, 'maya',  'maya@treesync.local',  '$2y$10$fV2.R2zYpP7Q8uF4F7v5.OuG8V8P3zK7s3W9x1f8Zy1h8eS5L.y6a', 'Maya Sampel',   'Auditor Internal',   4, 4,    5,    0, 1);
+ (1,  'admin', 'admin@treesync.local', '$2y$12$BElREnzHIyB1H.MMUE6VjuWDM8Gdky1Wd2gbqZ11o7wcx0tTFtNOu', 'Admin Simulasi', 'System Administrator', 1, NULL, NULL, 0, 1),
+ (2,  'budi',  'budi@treesync.local',  '$2y$12$2QP8YCE6t97qx9srBTm4JOrqvq5hbt5mMBuYtbxq8IVdHaP0LRFqi', 'Budi Simulasi',  'Direktur Utama',     2, 1,    NULL, 1, 1),
+ (3,  'siti',  'siti@treesync.local',  '$2y$12$2QP8YCE6t97qx9srBTm4JOrqvq5hbt5mMBuYtbxq8IVdHaP0LRFqi', 'Siti Contoh',   'Kadiv Riset',        3, 2,    2,    1, 1),
+ (4,  'andi',  'andi@treesync.local',  '$2y$12$2QP8YCE6t97qx9srBTm4JOrqvq5hbt5mMBuYtbxq8IVdHaP0LRFqi', 'Andi Fiktif',   'Kadiv Teknis',       3, 3,    2,    1, 1),
+ (5,  'rina',  'rina@treesync.local',  '$2y$12$2QP8YCE6t97qx9srBTm4JOrqvq5hbt5mMBuYtbxq8IVdHaP0LRFqi', 'Rina Dugaan',   'Kadiv Keuangan',     3, 4,    2,    1, 1),
+ (6,  'agus',  'agus@treesync.local',  '$2y$12$2QP8YCE6t97qx9srBTm4JOrqvq5hbt5mMBuYtbxq8IVdHaP0LRFqi', 'Agus Staf A',   'Peneliti Senior',    5, 2,    3,    0, 1),
+ (7,  'dewi',  'dewi@treesync.local',  '$2y$12$2QP8YCE6t97qx9srBTm4JOrqvq5hbt5mMBuYtbxq8IVdHaP0LRFqi', 'Dewi Uji',      'Peneliti Junior',    5, 5,    3,    1, 1),
+ (8,  'tono',  'tono@treesync.local',  '$2y$12$2QP8YCE6t97qx9srBTm4JOrqvq5hbt5mMBuYtbxq8IVdHaP0LRFqi', 'Tono Percobaan','DevOps Engineer',   5, 3,    4,    0, 1),
+ (9,  'lina',  'lina@treesync.local',  '$2y$12$2QP8YCE6t97qx9srBTm4JOrqvq5hbt5mMBuYtbxq8IVdHaP0LRFqi', 'Lina Reviu',    'Backend Developer',  5, 3,    4,    0, 1),
+ (10, 'joko',  'joko@treesync.local',  '$2y$12$2QP8YCE6t97qx9srBTm4JOrqvq5hbt5mMBuYtbxq8IVdHaP0LRFqi', 'Joko Tiruan',   'Akuntan',            5, 4,    5,    0, 1),
+ (11, 'maya',  'maya@treesync.local',  '$2y$12$2QP8YCE6t97qx9srBTm4JOrqvq5hbt5mMBuYtbxq8IVdHaP0LRFqi', 'Maya Sampel',   'Auditor Internal',   4, 4,    5,    0, 1);
 
 INSERT INTO announcements (id, author_id, target_division_id, judul, isi, lampiran) VALUES
  (1, 2, NULL, 'Kick-off Transformasi Digital 2026',

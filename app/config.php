@@ -65,8 +65,8 @@ const PERMISSION_CATALOG = [
 
 function env(string $key, ?string $default = null): ?string
 {
-    $v = getenv($key);
-    return $v === false || $v === '' ? $default : $v;
+    $v = $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key);
+    return ($v === false || $v === '' || $v === null) ? $default : (string)$v;
 }
 
 // Autoload modul aplikasi

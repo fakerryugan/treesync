@@ -1,0 +1,27 @@
+# Environment & kredensial rahasia (JANGAN dipublish ke GitHub)
+.env
+.env.backup
+.env.local
+.env.*.local
+
+# Tetap sertakan file contoh template env
+!.env.example
+
+# Unggahan file pengguna (gambar lampiran dll)
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# Dependensi Composer (jika ditambahkan di masa depan)
+/vendor/
+
+# File log & cache
+*.log
+.phpunit.result.cache
+
+# File sistem & IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~

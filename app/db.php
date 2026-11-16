@@ -8,17 +8,40 @@ function db(): PDO
     static $pdo = null;
     if ($pdo instanceof PDO) return $pdo;
 
-    $dsn = sprintf(
-        'mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4',
-        env('DB_HOST', '127.0.0.1'),
-        env('DB_PORT', '3306'),
-        env('DB_NAME', 'treesync')
-    );
-    $pdo = new PDO($dsn, env('DB_USER', 'root'), env('DB_PASS', ''), [
+    $host = env('DB_HOST', '127.0.0.1');
+    $port = env('DB_PORT', '3306');
+    $db   = env('DB_NAME', 'treesync');
+
+    $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4', $host, $port, $db);
+
+    $options = [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES   => false,
-    ]);
+    ];
+
+    // Aktifkan SSL/TLS untuk TiDB Cloud atau cloud provider lain
+    $isSsl = filter_var(env('DB_SSL', 'false'), FILTER_VALIDATE_BOOLEAN)
+        || ($host !== '127.0.0.1' && $host !== 'localhost');
+
+    if ($isSsl) {
+        $sslCaKey = defined('Pdo\Mysql::ATTR_SSL_CA') ? \Pdo\Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA;
+        $sslVerifyKey = defined('Pdo\Mysql::ATTR_SSL_VERIFY_SERVER_CERT') ? \Pdo\Mysql::ATTR_SSL_VERIFY_SERVER_CERT : PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT;
+
+        $caPaths = [
+            '/etc/ssl/certs/ca-certificates.crt', // Debian / Ubuntu / Vercel
+            '/etc/pki/tls/certs/ca-bundle.crt',   // Amazon Linux / CentOS
+        ];
+        foreach ($caPaths as $ca) {
+            if (file_exists($ca)) {
+                $options[$sslCaKey] = $ca;
+                break;
+            }
+        }
+        $options[$sslVerifyKey] = false;
+    }
+
+    $pdo = new PDO($dsn, env('DB_USER', 'root'), env('DB_PASS', ''), $options);
     return $pdo;
 }
 
